@@ -1,0 +1,620 @@
+<group name="audit,">
+
+  <!-- SYSCALL -->
+  <rule id="200110" level="0">
+    <decoded_as>auditd-syscall</decoded_as>
+    <description>Audit: SYSCALL Messages grouped.</description>
+    <options>no_log</options> <!-- Не сохранять в алеры -->
+    <group>syscall,</group>
+  </rule>
+
+  <!-- EXECVE -->
+  <rule id="200111" level="0">
+    <decoded_as>auditd-execve</decoded_as>
+    <description>Audit: EXECVE Messages grouped.</description>
+    <options>no_log</options>
+    <group>execve,</group>
+  </rule>
+
+  <!-- PATH -->
+  <rule id="200112" level="0">
+    <decoded_as>auditd-path</decoded_as>
+    <description>Audit: PATH Messages grouped.</description>
+    <options>no_log</options>
+    <group>path,</group>
+  </rule>
+
+  <!-- CONFIG_CHANGE -->
+  <rule id="200113" level="3"> 
+    <decoded_as>auditd-config_change</decoded_as>
+    <description>Detect changes in auditd configuration files.</description>
+    <group>config_change,</group>
+  </rule>
+
+  <!-- USER_AND_CRED -->
+  <rule id="200114" level="0">
+    <decoded_as>auditd-user_and_cred</decoded_as>
+    <description>Audit: USER_AND_CRED Messages grouped.</description>
+    <options>no_log</options>
+    <group>user_and_cred,</group>
+  </rule>
+  
+  <rule id="200120" level="12">
+    <if_sid>200112</if_sid>
+    <list field="audit.directory.name" lookup="address_match_key">etc/lists/bash_profile</list>
+    <description>User $(audit.ouid) modified shell profile file $(audit.directory.name)</description>
+    <mitre>
+      <id>T1546</id>
+    </mitre>
+    <group>path,</group>
+  </rule>
+
+  <rule id="200121" level="12">
+    <if_sid>200112</if_sid>
+    <field name="audit.directory.name">\.bashrc$|\.bash_profile$|\.profile$</field>
+    <description>User $(audit.ouid) modified shell profile file $(audit.directory.name)</description>
+    <mitre>
+      <id>T1546</id>
+    </mitre>
+    <group>path,</group>
+  </rule>
+
+  <rule id="200186" level="10">
+    <if_sid>200110</if_sid> 
+    <field name="audit.command">^users$|^w$|^who$|^whoami$|^id$|^pwd$</field>
+    <description>User $(audit.uid_name) executed reconnaissance tool: $(audit.command)</description>
+    <mitre>
+      <id>T1033</id>
+    </mitre>
+    <group>recon,</group>
+  </rule>
+
+  <rule id="200187" level="8">
+    <if_sid>200110</if_sid>
+    <field name="audit.command">^uname$|^uptime$</field>
+    <description>System Information Discovery via $(audit.command). User: $(audit.uid_name)</description>
+    <mitre>
+      <id>T1082</id>
+    </mitre>
+    <group>recon,</group>
+  </rule>
+
+  <rule id="200166" level="12">
+    <if_sid>200110</if_sid>
+    <field name="audit.exe">/telnet$|/nmap$</field>
+    <description>Detected Network Scanner execution: $(audit.exe) by $(audit.uid_name)</description>
+    <mitre>
+      <id>T1046</id>
+    </mitre>
+    <group>syscall,recon,</group>
+  </rule>
+
+
+<!-- 
+type=SYSCALL msg=audit(1768115804.266:2624): arch=c000003e syscall=59 success=yes exit=0 a0=6074e8bca030 a1=6074e8bd27e0 a2=6074e8bd1840 a3=8 items=2 ppid=2046 pid=3256 auid=1000 uid=1000 gid=1000 euid=1000 suid=1000 fsuid=1000 egid=1000 sgid=1000 fsgid=1000 tty=pts0 ses=1 comm=\"nc\" exe=\"/usr/bin/nc.openbsd\" subj=unconfined key=\"susp_activity\"\u001dARCH=x86_64 SYSCALL=execve AUID=\"worker\" UID=\"worker\" GID=\"worker\" EUID=\"worker\" SUID=\"worker\" FSUID=\"worker\" EGID=\"worker\" SGID=\"worker\" FSGID=\"worker\" type=EXECVE msg=audit(1768115804.266:2624): argc=4 a0=\"nc\" a1=\"-l\" a2=\"-p\" a3=\"5555\" type=PATH msg=audit(1768115804.266:2624): item=0 name=\"/usr/bin/nc\" inode=914736 dev=08:03 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID=\"root\" OGID=\"root\" type=PATH msg=audit(1768115804.266:2624): item=1 name=\"/lib64/ld-linux-x86-64.so.2\" inode=914044 dev=08:03 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID=\"root\" OGID=\"root\" type=PROCTITLE msg=audit(1768115804.266:2624): proctitle=6E63002D6C002D700035353535
+-->
+
+  <rule id="200167" level="5">
+    <if_sid>200110</if_sid>
+    <field name="audit.command">nc|ncat</field>
+    <description>Netcat execution detected: $(audit.exe)</description>
+    <mitre>
+      <id>T1059</id>
+    </mitre>
+  </rule>
+
+  <rule id="200168" level="10">
+    <if_sid>200167</if_sid>
+    <field name="data.audit.execve.a1" type="pcre2">^l$</field>
+    <description>Netcat Bind Shell detected (Listening mode)</description>
+    <mitre>
+      <id>T1095</id>
+      <id>T1133</id>
+    </mitre>
+  </rule>
+
+  <rule id="200169" level="12">
+    <if_sid>200167</if_sid> 
+    <field name="data.audit.execve.a1" type="pcre2">^-e$|^-c$</field>
+    <description>Netcat Reverse Shell attempt detected</description>
+    <mitre>
+      <id>T1059.004</id> 
+      <id>T1219</id>     
+    </mitre>
+  </rule>
+
+  <rule id="200171" level="10">
+    <if_sid>200167</if_sid>
+    <field name="data.audit.execve.a1" type="pcre2">^-z$</field>
+    <description>Netcat Port Scanning detected (Flag -z)</description>
+    <mitre>
+      <id>T1046</id>
+    </mitre>
+  </rule>
+
+  <rule id="200170" level="9">
+    <if_sid>200167</if_sid>
+    <field name="data.audit.execve.a1" type="pcre2">^-w$</field>
+    <description>Netcat outbound connection attempt to remote host</description>
+    <mitre>
+      <id>T1021</id> 
+    </mitre>
+  </rule>
+
+  <rule id="200122" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">arecord</field>
+    <field name="audit.execve.a1">-vv</field>
+    <field name="audit.execve.a2">-fdat</field>
+    <description>Audio Capture detected via arecord</description>
+    <mitre>
+      <id>T1123</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200123" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">truncate</field>
+    <field name="audit.execve.a1">-s</field>
+    <description>Defense Evasion: Binary padding using truncate</description>
+    <mitre>
+      <id>T1027</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200124" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">dd</field>
+    <field name="audit.execve.a1">if=</field>
+    <description>Defense Evasion: Binary padding using dd</description>
+    <mitre>
+      <id>T1027</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200125" level="12">
+    <if_sid>200112</if_sid>
+    <field name="audit.directory.name">/var/run/haldrund.pid|/var/run/xinetd.lock|/var/run/kdevrund.pid</field>
+    <description>Malware: BPFDoor indicator file accessed: $(audit.directory.name)</description>
+    <mitre>
+      <id>T1059</id>
+    </mitre>
+    <group>path,</group>
+  </rule>
+  
+  <rule id="200126" level="1">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">iptables$</field>
+    <field name="audit.execve.a1">-t</field>
+    <field name="audit.execve.a2">nat</field>
+    <description>Iptables NAT modification</description>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200127" level="12">
+    <if_sid>200126</if_sid>
+    <match>--to-ports 42|--to-ports 43</match>
+    <description>Defense Evasion: BPFDoor port redirection detected</description>
+    <mitre>
+      <id>T1562</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200129" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">touch</field>
+    <field name="audit.execve.a1">-t|-acmr|-d|-r</field>
+    <description>Defense Evasion: File time attribute change (Timestomping)</description>
+    <mitre>
+      <id>T1070</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200130" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">chattr</field>
+    <field name="audit.execve.a1">-i</field>
+    <description>Defense Evasion: Removing immutable file attribute</description>
+    <mitre>
+      <id>T1222</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200131" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">xclip</field>
+    <field name="audit.execve.a3">-o</field>
+    <description>Collection: Clipboard data extraction via xclip</description>
+    <mitre>
+      <id>T1115</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200132" level="10">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">apt$|apt-get$</field>
+    <field name="audit.execve.a1">^install$|^reinstall$</field>
+    <description>Software Management: Package installation detected via '$(audit.execve.a0)'. User: $(audit.auid_name)</description>
+    <mitre>
+      <id>T1072</id> 
+    </mitre>
+    <group>software_mgmt,</group>
+  </rule>
+  
+  <rule id="200233" level="10">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">apt$|apt-get$</field>
+    <!-- Если install во втором аргументе -->
+    <field name="audit.execve.a2">^install$|^reinstall$</field>
+    <description>Software Management: Package installation via '$(audit.execve.a0)'. User: $(audit.auid_name)</description>
+    <mitre>
+      <id>T1072</id>
+    </mitre>
+    <group>software_mgmt,</group>
+  </rule>
+
+  <rule id="200134" level="10">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">dpkg$</field>
+    <field name="audit.execve.a1">^-i$|^--install$</field>
+    <description>Software Management: Package installation detected via dpkg. User: $(audit.auid_name)</description>
+    <mitre>
+      <id>T1072</id>
+    </mitre>
+    <group>software_mgmt,</group>
+  </rule>
+  
+  <rule id="200135" level="10">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">apt$|apt-get$</field>
+    <field name="audit.execve.a1">^remove$|^purge$|^autoremove$</field>
+    <description>Software Management: Package removal via '$(audit.execve.a0)'. User: $(audit.auid_name)</description>
+    <mitre>
+      <id>T1072</id>
+    </mitre>
+    <group>software_mgmt,defense_evasion,</group>
+  </rule>
+
+  <rule id="200136" level="10">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">apt$|apt-get$</field>
+    <field name="audit.execve.a2">^remove$|^purge$|^autoremove$</field>
+    <description>Software Management: Package removal via '$(audit.execve.a0)'. User: $(audit.auid_name)</description>
+    <mitre>
+      <id>T1072</id>
+    </mitre>
+    <group>software_mgmt,defense_evasion,</group>
+  </rule>
+  
+  <rule id="200137" level="10">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">^/usr/bin/dpkg$</field>
+    <field name="audit.execve.a1">^-r$|^--remove$|^-P$|^--purge$</field>
+    <description>Software Management: Package removal detected via dpkg. User: $(audit.auid_name)</description>
+    <mitre>
+      <id>T1072</id>
+    </mitre>
+    <group>software_mgmt,</group>
+  </rule>
+  
+  <rule id="200143" level="10">
+    <if_sid>200110</if_sid> 
+    <field name="audit.syscall">^59$</field> 
+    <field name="audit.command">^wget$|^curl$</field>
+    <description>Suspicious Download/Upload: User $(audit.auid_name) used $(audit.command)</description>
+    <mitre>
+      <id>T1105</id>
+    </mitre>
+    <group>exfiltration,</group>
+  </rule>
+  
+  <rule id="200144" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">wget</field>
+    <field name="audit.execve.a1">^--post-file=</field>
+    <description>Exfiltration: Sending file via wget POST</description>
+    <mitre>
+      <id>T1048</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200145" level="12">
+    <if_sid>200124</if_sid>
+    <field name="audit.execve.a1">if=/dev/null|if=/dev/zero</field>
+    <description>Impact: Data Wiping using dd</description>
+    <mitre>
+      <id>T1485</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200146" level="12">
+    <if_sid>200110</if_sid> 
+    <field name="audit.command">debugfs</field>
+    <description>Access to raw disk via debugfs. User: $(audit.auid)</description>
+    <mitre>
+      <id>T1006</id>
+    </mitre>
+    <group>syscall,</group>
+  </rule>
+  
+  <rule id="200147" level="12">
+    <if_sid>200110</if_sid>
+    <field name="audit.command">firewalld|iptables|ufw</field>
+    <description>Defense Evasion: Firewall configuration modification</description>
+    <mitre>
+      <id>T1562</id>
+    </mitre>
+    <group>syscall,</group>
+  </rule>
+  
+  <rule id="200149" level="1">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">grep</field>
+    <description>Grep execution</description>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200158" level="12">
+    <if_sid>200149</if_sid>
+    <match>password</match>
+    <description>Credential Access: Grepping for 'password' in files</description>
+    <mitre>
+      <id>T1552</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200159" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a0">mkdir|touch|vim|nano|vi</field>
+    <field name="audit.execve.a1">/.|^.</field>
+    <description>Defense Evasion: Creating hidden file/directory (starts with dot)</description>
+    <mitre>
+      <id>T1564</id>
+    </mitre>
+    <group>execve,</group>
+  </rule>
+  
+  <rule id="200162" level="12">
+    <if_sid>200112</if_sid>
+    <field name="audit.directory.name">/etc/ld.so.preload</field>
+    <description>Persistence: Modification of /etc/ld.so.preload (Shared Object Injection)</description>
+    <mitre>
+      <id>T1574</id>
+    </mitre>
+    <group>path,</group>
+  </rule>
+  
+  <rule id="200163" level="12">
+    <if_sid>200110</if_sid>
+    <field name="audit.command">insmod</field>
+    <description>Persistence: Loading kernel module via insmod. User: $(audit.auid)</description>
+    <mitre>
+      <id>T1547</id>
+    </mitre>
+    <group>syscall,</group>
+  </rule>
+  
+  <rule id="200164" level="12">
+    <if_sid>200112</if_sid>
+    <field name="audit.directory.name">/etc/syslog.conf|/etc/rsyslog.conf|/etc/syslog-ng/syslog-ng.conf</field>
+    <description>Defense Evasion: Syslog configuration modified</description>
+    <mitre>
+      <id>T1562</id>
+    </mitre>
+    <group>path,</group>
+  </rule>
+  
+  <rule id="200183" level="12">
+    <if_sid>200110</if_sid> <!-- Используем SYSCALL -->
+    <field name="audit.exe">tcpdump$|tshark$</field>
+    <description>Network sniffing tool $(audit.command) executed</description>
+    <mitre>
+      <id>T1040</id>
+    </mitre>
+    <group>syscall,</group>
+  </rule>
+  
+  <rule id="200184" level="10">
+    <if_sid>200112</if_sid>
+    <field name="audit.directory.nametype">CREATE</field>
+    <field name="audit.directory.name">^/usr/lib/systemd/system/|^/etc/systemd/system/|/.config/systemd/user/</field>
+    <description>Persistence: Systemd service created at $(audit.directory.name)</description>
+    <mitre>
+      <id>T1543</id>
+    </mitre>
+    <group>path,</group>
+  </rule>
+  
+  <rule id="200201" level="12">
+    <if_sid>200110, 200112</if_sid> 
+    <field name="audit.key">log_deletion</field>
+    <description>Defense Evasion: Audit log deletion detected! User: $(audit.auid)</description>
+    <mitre>
+      <id>T1070.002</id> 
+    </mitre>
+    <group>log_wiping,</group>
+  </rule>
+  
+  <rule id="200202" level="12">
+    <if_sid>200112</if_sid> 
+    <field name="audit.file.name">auth.log$|audit.log$</field>
+    <field name="audit.directory.nametype">^DELETE$</field> 
+    <description>Defense Evasion: Critical log file $(audit.file.name) deleted by user $(audit.auid)</description>
+    <mitre>
+      <id>T1070.002</id>
+    </mitre>
+    <group>log_wiping,</group>
+  </rule>
+  
+  <rule id="200203" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a4">^truncate$</field>
+    <description>Suspicious Activity: Log file truncation attempt via truncate command</description>
+    <mitre>
+      <id>T1070</id>
+    </mitre>
+    <group>log_wiping,</group>
+  </rule>
+
+  <rule id="200204" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a4">^rm$</field>
+    <match>auth.log|audit.log|wtmp|btmp</match>
+    <description>Suspicious Activity: Log file deletion via sudo rm command</description>
+    <mitre>
+      <id>T1070.002</id>
+    </mitre>
+    <group>log_wiping,</group>
+  </rule>
+
+  <rule id="200205" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a5">^rm$</field>
+    <match>auth.log|audit.log|wtmp|btmp</match>
+    <description>Suspicious Activity: Log file deletion via sudo rm command</description>
+    <mitre>
+      <id>T1070.002</id>
+    </mitre>
+  </rule>
+
+  <rule id="200206" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a6">^rm$</field>
+    <match>auth.log|audit.log|wtmp|btmp</match>
+    <description>Suspicious Activity: Log file deletion via sudo rm command</description>
+    <mitre>
+      <id>T1070.002</id>
+    </mitre>
+    <group>log_wiping,</group>
+  </rule>
+
+  <rule id="200207" level="12">
+    <if_sid>200111</if_sid>
+    <field name="audit.execve.a7">^rm$</field>
+    <match>auth.log|audit.log|wtmp|btmp</match>
+    <description>Suspicious Activity: Log file deletion via sudo rm command</description>
+    <mitre>
+      <id>T1070.002</id>
+    </mitre>
+    <group>log_wiping,</group>
+  </rule>
+
+  <rule id="200250" level="10">
+    <if_sid>200114</if_sid>
+    <field name="audit.res">^failed$|^0$</field>
+    <description>Auth: Failed authentication attempt for user $(audit.acct). Exe: $(audit.exe)</description>
+    <mitre>
+      <id>T1110</id> <!-- Brute Force -->
+    </mitre>
+    <group>authentication_failed,</group>
+  </rule>
+  
+  <rule id="200251" level="3">
+    <if_sid>200110</if_sid>
+    <field name="audit.execve.a0">^sudo$</field>
+    <description>Privilege Escalation: $(audit.uid_name) executed command $(audit.execve.a0) $(audit.execve.a1) $(audit.execve.a2) $(audit.execve.a3) $(audit.execve.a4) $(audit.execve.a5) $(audit.execve.a6) $(audit.execve.a7) $(audit.execve.a8)</description>
+    <mitre>
+      <id>T1548.003</id> 
+    </mitre>
+    <group>priv_escalation</group>
+  </rule>
+  
+  <rule id="200252" level="8">
+    <if_sid>200110</if_sid>
+    <field name="audit.exe">^/usr/bin/su$</field>
+    <field name="audit.success">^yes$</field>
+    <description>Privilege Escalation: User ID $(audit.auid) tried to switch to user ID $(audit.euid)</description>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+    <group>authentication_success,</group>
+  </rule>
+        
+  <rule id="200257" level="10">
+    <if_sid>200114</if_sid>
+    <field name="audit.type">^USER_AUTH$</field>
+    <field name="audit.exe">^/usr/bin/su$</field>
+    <field name="audit.res">success</field>
+    <description>Privilege Escalation: User $(audit.auid) successfully switched to '$(audit.acct)' using su</description>
+    <mitre>
+      <id>T1078</id>
+    </mitre>
+    <group>authentication_success,priv_escalation,</group>
+  </rule>
+  
+  <rule id="200270" level="5">
+    <if_sid>200110</if_sid> 
+    <field name="audit.key">perm_mod</field>
+    <field name="audit.command">chmod</field>
+    <description>File Permission Change: User $(audit.auid_name) changed permissions on '$(audit.directory.name)'</description>
+    <mitre>
+      <id>T1222</id>
+    </mitre>
+    <group>perm_modification,</group>
+  </rule>
+  
+  <rule id="200300" level="12">
+    <if_sid>200110</if_sid> 
+    <field name="audit.syscall">^59$</field>
+    <field name="audit.exe" type="pcre2">^/tmp/|^/var/tmp/|^/dev/shm/</field>
+    <description>Malware Indicator: Executable launched from temporary directory: $(audit.exe)</description>
+    <mitre>
+      <id>T1059</id>
+    </mitre>
+  </rule>
+  
+  <!-- 
+type=EXECVE msg=audit(1767967890.678:5393): argc=9 a0="sudo" a1="-S" a2="-p" a3="" a4="useradd" a5="-m" a6="-s" a7="/bin/bash" a8="sys_service"
+type=EXECVE msg=audit(1767972757.835:6740): argc=5 a0="useradd" a1="-m" a2="-s" a3="/bin/bash" a4="sys_service"
+  
+type=EXECVE msg=audit(1767967892.987:5610): argc=7 a0="sudo" a1="-S" a2="-p" a3="" a4="userdel" a5="-r" a6="sys_service"
+  -->
+
+  <rule id="200301" level="10">
+    <if_sid>200110</if_sid> 
+    <field name="audit.execve.a0">^useradd$|^adduser$</field>
+    <description>New user added to the system by $(audit.auid_name)</description>    
+    <mitre>
+      <id>T1136.001</id>
+    </mitre>
+  </rule>
+  
+  <rule id="200302" level="10">
+    <if_sid>200110</if_sid> 
+    <field name="audit.execve.a4">^useradd$|^adduser$</field>
+    <description>New user added to the system by $(audit.auid_name)</description>    
+    <mitre>
+      <id>T1136.001</id>
+    </mitre>
+  </rule>
+  
+  <rule id="200303" level="10">
+    <if_sid>200110</if_sid> 
+    <field name="audit.execve.a4">^usrdel$</field>
+    <description>User deleted from the system by $(audit.auid_name)</description>    
+    <mitre>
+      <id>T1136.001</id>
+    </mitre>
+  </rule>
+  
+  <rule id="200304" level="10">
+    <if_sid>200110</if_sid> 
+    <field name="audit.execve.a4">^usrdel$</field>
+    <description>User deleted from the system by $(audit.auid_name)</description>    
+    <mitre>
+      <id>T1136.001</id>
+    </mitre>
+  </rule>
+  
+  
+</group>

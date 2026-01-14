@@ -1,0 +1,29 @@
+<!-- Port scaner -->
+<group name="netstat_monitor,">
+  <rule id="200500" level="10">
+    <if_sid>530</if_sid> <!-- Вывод команды (ossec-logcollector) -->
+    <match>ossec: output: 'netstat_established'</match>
+    <regex>:4444\s+|:1389\s+</regex> <!-- Порты Metasploit / Log4Shell -->
+    <description>Network: Suspicious connection detected by Netstat (Port 4444/1389)</description>
+    <mitre>
+      <id>T1071</id>
+    </mitre>
+  </rule>
+</group>
+
+
+<group name="ossec,">
+  <rule id="100050" level="0">
+    <if_sid>530</if_sid>
+    <match>^ossec: output: 'process list'</match>
+    <description>List of running processes.</description>
+    <group>process_monitor,</group>
+  </rule>
+
+  <rule id="100051" level="7" ignore="900">
+    <if_sid>100050</if_sid>
+    <match>nc -l</match>
+    <description>netcat listening for incoming connections.</description>
+    <group>process_monitor,</group>
+  </rule>
+</group>  

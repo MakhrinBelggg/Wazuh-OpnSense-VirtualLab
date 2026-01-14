@@ -1,0 +1,362 @@
+<!--
+type=CONFIG_CHANGE msg=audit(1672265894.539:138315): auid=4294967295 ses=4294967295 subj=unconfined op=add_rule key="T1497_Virtualization_Sandbox_Evasion_System_Checks" list=4 res=1AUID="unset"
+-->
+
+<decoder name="auditd-config_change">
+  <prematch>^type=CONFIG_CHANGE</prematch>
+</decoder>
+
+<decoder name="auditd-config_change">
+  <parent>auditd-config_change</parent>
+  <!--<prematch offset="after_parent">^SYSCALL </prematch>-->
+  <regex offset="after_parent">msg=audit\(\d\d\d\d\d\d\d\d\d\d.\d\d\d:(\d+)\): </regex>
+  <order>audit.id</order>
+</decoder>
+
+<decoder name="auditd-config_change">
+  <parent>auditd-config_change</parent>
+  <regex>auid=(\S+) ses=(\S+) subj=(\S+) op=(\S+) </regex>
+  <order>audit.auid,audit.session,audit.subj,audit.op</order>
+</decoder>
+
+<decoder name="auditd-config_change">
+  <parent>auditd-config_change</parent>
+  <regex>key=\((\S+)\)|key="(\S+)"|key=(\S+) </regex>
+  <order>audit.key</order>
+</decoder>
+
+<decoder name="auditd-config_change">
+  <parent>auditd-config_change</parent>
+  <regex>list=(\S+)</regex>
+  <order>audit.list</order>
+</decoder>
+
+<decoder name="auditd-config_change">
+  <parent>auditd-config_change</parent>
+  <regex>res=(\S+)</regex>
+  <order>audit.res</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <prematch>^type=EXECVE</prematch>
+</decoder>
+
+<!--
+type=EXECVE msg=audit(1672268062.108:138472): argc=2 a0="base64" a1="-d" a2="t" a3="chmod"
+-->
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <!--<prematch offset="after_parent">^SYSCALL </prematch>-->
+  <regex offset="after_parent">msg=audit\(\d\d\d\d\d\d\d\d\d\d.\d\d\d:(\d+)\): </regex>
+  <order>audit.id</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>argc=\d+ a0="(\.*)"</regex>
+  <order>audit.execve.a0</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>a1="(\.*)"</regex>
+  <order>audit.execve.a1</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>a2="(\.*)"</regex>
+  <order>audit.execve.a2</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>a3="(\.*)"</regex>
+  <order>audit.execve.a3</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>a4="(\.*)"</regex>
+  <order>audit.execve.a4</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>a5="(\.*)"</regex>
+  <order>audit.execve.a5</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>a6="(\.*)"</regex>
+  <order>audit.execve.a6</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>a7="(\.*)"</regex>
+  <order>audit.execve.a7</order>
+</decoder>
+
+<decoder name="auditd-execve">
+  <parent>auditd-execve</parent>
+  <regex>a8="(\.*)"</regex>
+  <order>audit.execve.a8</order>
+</decoder>
+
+<!--
+type=PATH msg=audit(1672316980.514:138523): item=0 name="/usr/bin/grep" inode=2398 dev=08:01 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0OUID="root" OGID="root"
+-->
+
+<decoder name="auditd-path">
+  <prematch>^type=PATH</prematch>
+</decoder>
+
+<decoder name="auditd-path">
+  <parent>auditd-path</parent>
+  <!--<prematch offset="after_parent">^SYSCALL </prematch>-->
+  <regex offset="after_parent">msg=audit\(\d\d\d\d\d\d\d\d\d\d.\d\d\d:(\d+)\): item=\S+ name="(\.*)" inode=(\S+) dev=\S+ mode=(\S+) ouid=\S+ ogid=\S+ rdev=\S+ nametype=(\S+) </regex>
+  <order>audit.id,audit.directory.name, audit.directory.inode, audit.directory.mode,audit.directory.nametype</order>
+</decoder>
+
+<decoder name="auditd-path">
+  <parent>auditd-path</parent>
+  <regex offset="after_regex">type=PATH msg=audit\(\S+\): item=\S+ name="(\.*)" inode=(\S+) dev=\S+ mode=(\S+) ouid=\S+ ogid=\S+ |type=PATH msg=audit\(\S+\): item=\S+ name=\((null)\) inode=(\S+) dev=\S+ mode=(\S+) ouid=\S+ ogid=\S+ </regex>
+  <order>audit.file.name, audit.file.inode, audit.file.mode</order>
+</decoder>
+
+
+<!--
+  type=SYSCALL msg=audit(1479982525.380:50): arch=c000003e syscall=2 success=yes exit=3 a0=7ffedc40d83b a1=941 a2=1b6 a3=7ffedc40cce0 items=2 ppid=432 pid=3333 auid=0 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=pts0 ses=2 comm="touch" exe="/bin/touch" key="audit-wazuh-w" type=CWD msg=audit(1479982525.380:50):  cwd="/var/log/audit" type=PATH msg=audit(1479982525.380:50): item=0 name="/var/log/audit/tmp_directory1/" inode=399849 dev=ca:02 mode=040755 ouid=0 ogid=0 rdev=00:00 nametype=PARENT type=PATH msg=audit(1479982525.380:50): item=1 name="/var/log/audit/tmp_directory1/malware.py" inode=399852 dev=ca:02 mode=0100644 ouid=0 ogid=0 rdev=00:00 nametype=CREATE type=PROCTITLE msg=audit(1479982525.380:50): proctitle=746F756368002F7661722F6C6F672F61756469742F746D705F6469726563746F7279312F6D616C776172652E7079
+  
+  type=SYSCALL msg=audit(1767790692.757:10546): arch=c000003e syscall=87 success=yes exit=0 a0=7ffc4a4b41f0 a1=5ff70ec6e249 a2=0 a3=0 items=2 ppid=81442 pid=81443 auid=1002 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=35 comm=\"useradd\" exe=\"/usr/sbin/useradd\" subj=unconfined key=\"delete\"\u001dARCH=x86_64 SYSCALL=unlink AUID=\"alex_adm\" UID=\"root\" GID=\"root\" EUID=\"root\" SUID=\"root\" FSUID=\"root\" EGID=\"root\" SGID=\"root\" FSGID=\"root\" type=PATH msg=audit(1767790692.757:10546): item=0 name=\"/etc/\" inode=261121 dev=08:03 mode=040755 ouid=0 ogid=0 rdev=00:00 nametype=PARENT cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID=\"root\" OGID=\"root\" type=PATH msg=audit(1767790692.757:10546): item=1 name=\"/etc/gshadow.lock\" inode=264393 dev=08:03 mode=0100600 ouid=0 ogid=0 rdev=00:00 nametype=DELETE cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID=\"root\" OGID=\"root\" type=PROCTITLE msg=audit(1767790692.757:10546): proctitle=75736572616464002D6D002D73002F62696E2F62617368007379735F73657276696365
+  
+type=SYSCALL msg=audit(1768043994.377:3029): arch=c000003e syscall=59 success=yes exit=0 a0=599f2e7c9578 a1=599f2e7c6220 a2=599f2e8253c0 a3=0 items=2 ppid=6015 pid=6017 auid=1002 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=6 comm="useradd" exe="/usr/sbin/useradd" subj=unconfined key="user_modification"\u001dARCH=x86_64 SYSCALL=execve AUID="alex_adm" UID="root" GID="root" EUID="root" SUID="root" FSUID="root" EGID="root" SGID="root" FSGID="root" type=EXECVE msg=audit(1768043994.377:3029): argc=5 a0="useradd" a1="-m" a2="-s" a3="/bin/bash" a4="sys_service" type=PATH msg=audit(1768043994.377:3029): item=0 name="/usr/sbin/useradd" inode=948483 dev=08:03 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID="root" OGID="root" type=PATH msg=audit(1768043994.377:3029): item=1 name="/lib64/ld-linux-x86-64.so.2" inode=914044 dev=08:03 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID="root" OGID="root" type=PROCTITLE msg=audit(1768043994.377:3029): proctitle=75736572616464002D6D002D73002F62696E2F62617368007379735F73657276696365
+
+type=SYSCALL msg=audit(1768043994.377:3029): arch=c000003e syscall=59 success=yes exit=0 a0=599f2e7c9578 a1=599f2e7c6220 a2=599f2e8253c0 a3=0 items=2 ppid=6015 pid=6017 auid=1002 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=6 comm=\"useradd\" exe=\"/usr/sbin/useradd\" subj=unconfined key=\"user_modification\"\u001dARCH=x86_64 SYSCALL=execve AUID=\"alex_adm\" UID=\"root\" GID=\"root\" EUID=\"root\" SUID=\"root\" FSUID=\"root\" EGID=\"root\" SGID=\"root\" FSGID=\"root\" type=EXECVE msg=audit(1768043994.377:3029): argc=5 a0=\"useradd\" a1=\"-m\" a2=\"-s\" a3=\"/bin/bash\" a4=\"sys_service\" type=PATH msg=audit(1768043994.377:3029): item=0 name=\"/usr/sbin/useradd\" inode=948483 dev=08:03 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID=\"root\" OGID=\"root\" type=PATH msg=audit(1768043994.377:3029): item=1 name=\"/lib64/ld-linux-x86-64.so.2\" inode=914044 dev=08:03 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID=\"root\" OGID=\"root\" type=PROCTITLE msg=audit(1768043994.377:3029): proctitle=75736572616464002D6D002D73002F62696E2F62617368007379735F73657276696365  
+-->
+
+<!-- SYSCALL  -->
+
+<decoder name="auditd-syscall">
+  <prematch type="pcre2">^type=SYSCALL</prematch>
+  <regex type="pcre2">msg=audit\(\d+\.\d+:(\d+)\):</regex>
+  <order>audit.id</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">arch=(\S+)\s+syscall=(\d+)\s+success=(\w+)\s+exit=(\S+)</regex>
+  <order>audit.arch, audit.syscall, audit.success, audit.exit</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">ppid=(\d+)\s+pid=(\d+)\s+auid=(\d+)\s+uid=(\d+)\s+gid=(\d+)\s+euid=(\d+)\s+suid=(\d+)\s+fsuid=(\d+)\s+egid=(\d+)\s+sgid=(\d+)\s+fsgid=(\d+)</regex>
+  <order>audit.ppid, audit.pid, audit.auid, audit.uid, audit.gid, audit.euid, audit.suid, audit.fsuid, audit.egid, audit.sgid, audit.fsgid</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">tty=(\S+)\s+ses=(\S+)</regex>
+  <order>audit.tty, audit.session</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">comm=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.command</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">exe=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.exe</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">key=\\?"?([^"\\\\]+)\\?"?</regex>
+  <order>audit.key</order>
+</decoder>
+
+<!-- AUID="name" -->
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">AUID=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.auid_name</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sUID=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.uid_name</order>
+</decoder>
+
+<!-- EXECVE arguments -->
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">type=EXECVE.+?argc=(\d+)</regex>
+  <order>audit.execve.argc</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa0=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a0</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa1=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a1</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa2=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a2</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa3=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a3</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa4=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a4</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa5=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a5</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa6=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a6</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa7=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a7</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">\sa8=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.execve.a8</order>
+</decoder>
+
+<!-- PATH arguments -->
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">name=\\?"([^"\\]+)\\?"</regex>
+  <order>audit.directory.name</order>
+</decoder>
+
+<decoder name="auditd-syscall">
+  <parent>auditd-syscall</parent>
+  <regex type="pcre2">inode=(\d+)\s+dev=\S+\s+mode=(\S+)</regex>
+  <order>audit.directory.inode, audit.directory.mode</order>
+</decoder>
+
+
+<!--
+type=SYSCALL msg=audit(1768041175.323:3227): arch=c000003e syscall=59 success=yes exit=0 a0=630c047215f0 a1=630c04721f30 a2=630c04720db0 a3=1b6 items=2 ppid=3056 pid=3059 auid=1002 uid=1002 gid=1002 euid=0 suid=0 fsuid=0 egid=1002 sgid=1002 fsgid=1002 tty=(none) ses=4 comm=\"sudo\" exe=\"/usr/bin/sudo\" subj=unconfined key=\"priv_esc\"\u001dARCH=x86_64 SYSCALL=execve AUID=\"alex_adm\" UID=\"alex_adm\" GID=\"alex_adm\" EUID=\"root\" SUID=\"root\" FSUID=\"root\" EGID=\"alex_adm\" SGID=\"alex_adm\" FSGID=\"alex_adm\" type=EXECVE msg=audit(1768041175.323:3227): argc=9 a0=\"sudo\" a1=\"-S\" a2=\"-p\" a3=\"\" a4=\"useradd\" a5=\"-m\" a6=\"-s\" a7=\"/bin/bash\" a8=\"sys_service\" type=PATH msg=audit(1768041175.323:3227): item=0 name=\"/usr/bin/sudo\" inode=916511 dev=08:03 mode=0104755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID=\"root\" OGID=\"root\" type=PATH msg=audit(1768041175.323:3227): item=1 name=\"/lib64/ld-linux-x86-64.so.2\" inode=914044 dev=08:03 mode=0100755 ouid=0 ogid=0 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0\u001dOUID=\"root\" OGID=\"root\" type=PROCTITLE msg=audit(1768041175.323:3227): proctitle=7375646F002D53002D70000075736572616464002D6D002D73002F62696E2F62617368007379735F73657276696365
+
+type=SYSCALL msg=audit(1767857463.180:2498): arch=c000003e syscall=268 success=yes exit=0 a0=ffffff9c a1=64e890afb5e0 a2=1b4 a3=0 items=1 ppid=5700 pid=10677 auid=1000 uid=1000 gid=1000 euid=1000 suid=1000 fsuid=1000 egid=1000 sgid=1000 fsgid=1000 tty=pts1 ses=7 comm="chmod" exe="/usr/bin/chmod" subj=unconfined key="perm_mod" ARCH=x86_64 SYSCALL=fchmodat AUID="worker" UID="worker" GID="worker" EUID="worker" SUID="worker" FSUID="worker" EGID="worker" SGID="worker" FSGID="worker" type=PATH msg=audit(1767857463.180:2498): item=0 name="12.sh" inode=526935 dev=08:03 mode=0100775 ouid=1000 ogid=1000 rdev=00:00 nametype=NORMAL cap_fp=0 cap_fi=0 cap_fe=0 cap_fver=0 cap_frootid=0 OUID="worker" OGID="worker" type=PROCTITLE msg=audit(1767857463.180:2498): proctitle=63686D6F64002D780031322E7368
+-->
+
+
+
+<!-- 
+   Декодер для событий пользователей (USER_AUTH, CRED_ACQ и т.д.)
+-->
+
+<!--
+type=USER_ACCT msg=audit(1480087217.108:6042): pid=6013 uid=0 auid=4294967295 ses=4294967295 msg='op=PAM:accounting acct="root" exe="/usr/sbin/sshd" hostname=10.10.10.100 addr=10.10.10.100 terminal=ssh res=success'
+
+type=CRED_ACQ msg=audit(1480087217.108:6043): pid=6013 uid=0 auid=4294967295 ses=4294967295 msg='op=PAM:setcred acct="root" exe="/usr/sbin/sshd" hostname=10.10.10.100 addr=10.10.10.100 terminal=ssh res=success'
+
+type=USER_AUTH msg=audit(1767789147.388:10295): pid=71125 uid=1000 auid=1000 ses=30 subj=unconfined msg='op=PAM:authentication grantors=? acct="root" exe="/usr/bin/su" hostname=? addr=? terminal=/dev/pts/2 res=failed'UID="worker" AUID="worker"
+
+type=DEL_GROUP msg=audit(1767973331.686:8436): pid=18179 uid=0 auid=1002 ses=35 subj=unconfined msg='op=deleting shadow group acct="sys_service" exe="/usr/sbin/userdel" hostname=? addr=? terminal=? res=success'UID="root" AUID="alex_adm"
+
+type=DEL_USER msg=audit(1767973331.686:8437): pid=18179 uid=0 auid=1002 ses=35 subj=unconfined msg='op=deleting user from shadow group id=1004 exe="/usr/sbin/userdel" hostname=? addr=? terminal=? res=success'UID="root" AUID="alex_adm" ID="sys_service"
+-->
+
+<decoder name="auditd-user_and_cred">
+  <prematch>^type=</prematch>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <prematch offset="after_parent">^USER_ACCT |^CRED_ACQ |^USER_START |^CRED_REFR|^CRYPTO_KEY_USER|^CRYPTO_SESSION |^USER_AUTH |^USER_ROLE_CHANGE|^SERVICE_STOP|^DEL_USER|^DEL_GROUP|^ADD_USER|^ADD_GROUP</prematch>
+  <regex offset="after_parent">^(\S+) msg=audit\(\d\d\d\d\d\d\d\d\d\d.\d\d\d:(\d+)\): </regex>
+  <order>audit.type,audit.id</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_regex">^pid=(\S+) uid=(\S+) auid=(\S+) ses=(\S+)</regex>
+  <order>audit.pid,audit.uid,audit.auid,audit.session</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_parent">subj=(\S+)</regex>
+  <order>audit.subj</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_parent">acct="(\S+)"</regex>
+  <order>audit.acct</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_parent"> id=(\d+)</regex>
+  <order>audit.target_id</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_parent">op=([^:\s]+:\S+)</regex>
+  <order>audit.op</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_parent">exe="(\S+)"</regex>
+  <order>audit.exe</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_parent">addr=(\S+)</regex>
+  <order>srcip</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_parent">unit=(\S+)</regex>
+  <order>audit.unit</order>
+</decoder>
+
+<decoder name="auditd-user_and_cred">
+  <parent>auditd-user_and_cred</parent>
+  <regex offset="after_parent">res=(\w+)</regex>
+  <order>audit.res</order>
+</decoder>

@@ -1,0 +1,149 @@
+<!--
+  -  OPNsense Ruleset
+-->
+
+<group name="opnsense,">
+
+  <!-- FILTERLOG RULES -->
+       
+  <rule id="100000" level="0">
+    <decoded_as>opnsense-filterlog</decoded_as>
+    <description>OPNsense firewall traffic grouped</description>
+  </rule>
+
+  <rule id="100001" level="4">
+    <if_sid>100000</if_sid>
+    <action type="pcre2">block|drop</action>
+    <description>OPNsense: Blocked $(protocol) traffic from $(srcip) to $(dstip):$(dstport)</description>
+    <group>firewall_block,pci_dss_1.4,gpg13_4.12,hipaa_164.312.a.1,nist_800_53_SC.7,tsc_CC6.7,tsc_CC6.8,</group>  
+  </rule>
+  
+  <rule id="100002" level="10" frequency="15" timeframe="60" ignore="120">
+    <if_matched_sid>100001</if_matched_sid>
+    <same_source_ip />
+    <description>OPNsense: Multiple blocks from $(srcip) (Possible Scan/Flood)</description>
+    <mitre>
+      <id>T1110</id>
+      <id>T1046</id>
+    </mitre>
+    <group>multiple_blocks,pci_dss_1.4,pci_dss_10.6.1,</group>
+  </rule>
+  
+  <rule id="100003" level="3">
+    <if_sid>100000</if_sid>
+    <action type="pcre2">pass|permit|rdr</action>
+    <description>OPNsense: $(protocol) traffic $(srcip) -> $(dstip):$(dstport)</description>
+  </rule>
+
+  <rule id="100004" level="3">
+    <if_sid>100003</if_sid>
+    <protocol>tcp</protocol>
+    <field name="data.direction">^in$</field>
+    <field name="tcp_flags">^S$</field>
+    <description>OPNsense: Detected TCP SYN packet from $(srcip)</description>
+  </rule>
+
+  <rule id="100006" level="12" frequency="50" timeframe="15">
+    <if_matched_sid>100004</if_matched_sid>
+    <description>OPNsense: SYN Flood from $(srcip). High volume of SYN packets.</description>
+    <mitre>
+      <id>T1498</id>
+    </mitre>
+    <group>dos_attack,firewall_flood</group>
+  </rule>
+
+  <rule id="100008" level="10" frequency="20" timeframe="15" ignore="10">
+    <if_matched_sid>100003</if_matched_sid>
+    <protocol>^tcp$</protocol>
+    <action type="pcre2">pass|rdr</action>
+    <description>DoS: High volume of ALLOWED TCP traffic (Service Stress Test)</description>
+    <mitre>
+      <id>T1499</id> 
+    </mitre>
+    <group>dos_attack,service_flood,</group>
+  </rule>
+  
+  <rule id="100022" level="5">
+    <if_sid>100003</if_sid>
+    <dstport>22</dstport>
+    <description>OPNsense: SSH Connection Allowed from $(srcip) to $(dstip)</description>
+    <mitre>
+      <id>T1021.004</id>
+    </mitre>
+    <group>ssh_connection,authentication_success,</group>
+  </rule>
+  
+  <rule id="100025" level="10">
+    <if_sid>100003</if_sid>
+    <dstport type="pcre2">4444|1389|9999</dstport> 
+    <description>Suspicious connection to port $(dstport) from $(srcip)</description>
+    <mitre>
+      <id>T1071</id> 
+    </mitre>
+  </rule>
+
+  
+  <!-- UNBOUND DNS RULES -->
+
+  <rule id="100100" level="0">
+    <decoded_as>opn-unbound</decoded_as>
+    <description>OPNsense Unbound grouped</description>
+  </rule>
+
+  <rule id="100101" level="0">
+    <if_sid>100100</if_sid>
+    <field name="dns_action">^query$</field>
+    <description>OPNsense DNS Query (Single Event)</description>
+  </rule>
+
+  <rule id="100103" level="3" frequency="3" timeframe="10" ignore="60">
+    <if_matched_sid>100101</if_matched_sid> 
+    <same_field>dns_query</same_field>       
+    <same_source_ip />                        
+    <description>OPNsense DNS Query: $(srcip) asked for $(dns_query) (Repeated)</description>
+  </rule>
+  
+  <rule id="100102" level="0">
+    <if_sid>100100</if_sid>
+    <field name="dns_rcode">SERVFAIL</field>
+    <description>OPNsense DNS Error (Single Event)</description>
+  </rule>
+
+  <rule id="100104" level="3" frequency="3" timeframe="10" ignore="60">
+    <if_matched_sid>100102</if_matched_sid> 
+    <same_field>dns_query</same_field>
+    <same_source_ip />
+    <description>OPNsense DNS Error: SERVFAIL for domain $(dns_query) (Repeated)</description>
+  </rule>
+
+  <!-- DHCLIENT RULES  -->
+
+  <rule id="100200" level="0">
+    <decoded_as>opn-dhclient</decoded_as>
+    <description>OPNsense DHClient grouped</description>
+  </rule>
+
+  <rule id="100201" level="3">
+    <if_sid>100200</if_sid>
+    <description>OPNsense DHCP: $(message)</description>
+  </rule>
+
+  <rule id="100202" level="0">
+    <if_sid>100201</if_sid>
+    <field name="message" type="pcre2">RENEW|Creating resolv\.conf|BOUND|bound</field>
+    <description>Ignore OPNsense DHCP renewal noise</description>
+  </rule>
+
+  <!-- FIREWALL BACKEND RULES -->
+  
+  <rule id="100300" level="0">
+    <decoded_as>opn-firewall</decoded_as>
+    <description>OPNsense Firewall Backend grouped</description>
+  </rule>
+
+  <rule id="100301" level="3">
+    <if_sid>100300</if_sid>
+    <description>OPNsense System Event: $(message)</description>
+  </rule>
+
+</group>
