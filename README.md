@@ -48,6 +48,10 @@
 - 16 GB RAM
 - 140 GB HDD free space
 
+## Установка в VirtualBox
+- [Скачать с Яндекс Диска](https://disk.yandex.ru/d/aK0xkFV29YygcQ) (Размер: 35,2 ГБ)
+- Импортировать в Oracle VirtualBox
+
 ## Troubleshooting
 
 ### Если нет интернета на машинах Wazuh_Server или Ubuntu_Client
