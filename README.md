@@ -27,7 +27,7 @@
 #### Учетные записи
 
 - worker:1qaz2wsx3edc
-  -alex_adm:qwerty123
+- alex_adm:qwerty123
 - alex:zxcvbnm
 - root:010324
 - Подключиться по SSH с хоста: 127.0.0.1:2222
@@ -83,13 +83,13 @@ sudo systemctl status wazuh-agent
 sudo systemctl restart wazuh-agent
 ```
 
-- сли перезагрузка службы не помогла, убедитесь в правильности конфигурации агента
+- Eсли перезагрузка службы не помогла, убедитесь в правильности конфигурации агента
 
 ```bash
 sudo nano /var/ossec/etc/ossec.conf
 ```
 
-- Внутри блока <client><server> должен быть указан IP-адрес узла WazuhServer: <address>192.168.1.100</address>
+- Внутри блока "server" должен быть указан IP-адрес узла WazuhServer: `<address>192.168.1.100</address>`
 - Проверить можно командой ip a или ifconfig с машины WazuhServer.
 
 ## Добавление нового агента в Wazuh
@@ -118,7 +118,8 @@ sudo /var/ossec/bin/wazuh-analysisd -t
 sudo /var/ossec/bin/wazuh-logtest
 ```
 
-- Phase 2 укажет, какой декодер смог распознать заданный лог, Phase 3 — какое правило сработало. Сообщение Alert will be generated означает появление алерта в дашборде (параметр rule должно быть >= 3).
+- Phase 2 укажет, какой декодер смог распознать заданный лог, Phase 3 — какое правило сработало.
+- Сообщение Alert will be generated означает появление алерта в дашборде (параметр rule.level должно быть >= 3).
 - После изменений необходимо перезапустить manager
 
 ```bash
